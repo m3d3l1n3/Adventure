@@ -3,11 +3,13 @@ import rendering.Drawable;
 import rendering.SpriteEngine;
 import rendering.SpriteSheet;
 import rendering.SpriteSheetBuilder;
+import saving.Progress;
 import tiles.TileManager;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*; // abstract window toolkit
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +20,7 @@ public class Panel extends JPanel implements Drawable {
     private final int scale = 3;
     private final int finalTileSize = tileSize * scale;
     private final int maxScreenWidth = 16 * finalTileSize; //768 pixels
-    private final int maxScreenHeight = 12 * finalTileSize;//576 pixels
+    private final int maxScreenHeight = 16 * finalTileSize;//576 pixels
     Player player;
     private String mapName;
     KeyHandler keyHandler = new KeyHandler();
@@ -28,6 +30,7 @@ public class Panel extends JPanel implements Drawable {
     TileManager tileManager;
     private int numberDesign = getNumberDesign(readData);
     public static int readData;
+    public Progress progress = new Progress();
 
 
     public int getNumberDesign(int readData) {
@@ -54,7 +57,7 @@ public class Panel extends JPanel implements Drawable {
         return mapName;
     }
 
-    public Panel(String mapName, int positionX, int positionY) {
+    public Panel(String mapName, int positionX, int positionY, String playerName) {
         this.setPreferredSize(new Dimension(maxScreenWidth, maxScreenHeight));
         this.setBackground(Color.BLACK);
         this.setDoubleBuffered(true); //for rendering performance
@@ -62,32 +65,108 @@ public class Panel extends JPanel implements Drawable {
         this.keyHandler.setInitialKeyState();
         this.setMapName(mapName);
         this.tileManager = new TileManager(maxScreenWidth, maxScreenHeight, getMapName());
-        this.player = new Player(positionX, positionY, 4, 100, null);
-
+        this.player = new Player(positionX, positionY, 4, 100, null,playerName);
+        progress.saveProgressToDatabase(player.getName(),1,player.getPositionX(),player.getPositionY());
 
     }
 
+    // wanna construct here the checker of collisions. buffered image offers the possiblity to getHeight and getWidth
+    // therefore the size of the tile can be determined
+    // the math: if the size of the player and the future possible step is stepping over a tile with collision it is
+    // not allowed (text will be printed in the terminal for that)
+    // How do I make sure that the step is not allowed, without stopping the gameloop?
     public void update() {
-        if (keyHandler.keyState[0] == 1) {
-            player.setPositionY(player.getPositionY() - player.getSpeed());
+        int tileX = player.getPositionX();
+        int tileY = player.getPositionY();
+        boolean moved = false;
+        int directionX,directionY;
+        int futureX,futureY,futureTileX,futureTileY;
+//        if (keyHandler.keyState[0] == 1
+//        ) {
+//            futureY = player.getPositionY()- player.getSpeed();
+//            futureTileY = futureY/finalTileSize;
+//            //has to be divided so it gets to proper size(the map is not the size of the screen)
+//            if (isTileWalkable(tileX, futureTileY)) {
+//                player.setPositionY(futureY);
+//                //System.out.println("W: " + tileManager.getMapTile(player.getPositionX(), player.getPositionY()));
+//                //return;
+//                moved = true;
+//            } else {
+//                System.out.println("Collision detected: up");}
+//        }
+//        if (keyHandler.keyState[1] == 1
+//        ) {
+//            futureY = player.getPositionY()+ player.getSpeed();
+//            futureTileY = futureY/finalTileSize;
+//            if (isTileWalkable(tileX,futureTileY)) {
+//                player.setPositionY(futureY);
+//                moved = true;
+//            } else {
+//                System.out.println("Collision detected: down");}
+//        }
+//        if (keyHandler.keyState[2] == 1
+//        ) {
+//            futureX = player.getPositionX()- player.getSpeed();
+//            futureTileX = futureX/finalTileSize;
+//            if (isTileWalkable(futureTileX,tileY)) {
+//                player.setPositionX(futureX);
+//                moved = true;
+//            } else{
+//                System.out.println("Collision detected: left");}
+//        }
+//        if (keyHandler.keyState[3] == 1
+//        ) {
+//            futureX = player.getPositionX()+ player.getSpeed();
+//            futureTileX = futureX/finalTileSize;
+//            if (isTileWalkable(futureTileX,tileY)) {
+//                player.setPositionX(futureX);
+//                moved=true;
+//            } else {
+//                System.out.println("Collision detected: right");}
+//        }
+        //if(!moved){
+        //    System.out.println("Player didnt move");
+        //}
 
-        } else if (keyHandler.keyState[1] == 1) {
-            player.setPositionY(player.getPositionY() + player.getSpeed());
+        if (keyHandler.keyState[0] == 1){
+            directionX = 0;
+            directionY = -1;
+    } else if (keyHandler.keyState[1] == 1) {
+        directionX = 0;
+        directionY = 1;
+    } else if (keyHandler.keyState[2] == 1) {
+        directionX = -1;
+        directionY = 0;
+    } else if (keyHandler.keyState[3] == 1) {
+        directionX = 1;
+        directionY = 0;
+    } else {
+        directionX = 0;
+        directionY = 0;
+    }
+         futureTileX = (player.getPositionX() + player.getSpeed() * directionX) / finalTileSize;
+         futureTileY = (player.getPositionY() + player.getSpeed() * directionY) / finalTileSize;
 
-        } else if (keyHandler.keyState[2] == 1) {
-            player.setPositionX(player.getPositionX() - player.getSpeed());
-
-        } else if (keyHandler.keyState[3] == 1) {
-            player.setPositionX(player.getPositionX() + player.getSpeed());
-
+        if (isTileWalkable(futureTileX, futureTileY)) {
+            player.setPositionX(player.getPositionX() + player.getSpeed() * directionX);
+            player.setPositionY(player.getPositionY() + player.getSpeed() * directionY);
+        } else {
+            System.out.println("Collision detected!");
         }
+
+    }
+    public boolean isTileWalkable(int tileX, int tileY) {
+        int tileValue = tileManager.getMapTile(tileX, tileY);
+        System.out.println("Checking tile [" + tileX + ", " + tileY + "] = " + tileValue);
+        return tileValue == 0; // Walkable tiles are 0
     }
 
     @Override
     public SpriteSheet loadAnimation(int gridX, int gridY, int designNumber) {
+
         try {
             System.out.println("Loading animation:" + designNumber);
-            String pathName = "2DAdventure/src/sprites/player/Char_00" + designNumber + ".png";
+            String pathName = "src/main/java/sprites/player/Char_00" + designNumber + ".png";
             BufferedImage sheet = ImageIO.read(new File(pathName));
             SpriteSheet spriteSheet = new SpriteSheetBuilder().
                     withSheet(sheet).

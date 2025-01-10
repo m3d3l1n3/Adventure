@@ -1,20 +1,17 @@
 package entity;
 
-import rendering.Drawable;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
-public class Player implements Entity//, Drawable
-{
+public class NPC implements Entity {
 
     private int positionX;
     private int positionY;
+    private String message;
     private int speed;
     private int health;
     private BufferedImage image;
 
-    public Player(int x, int y, int speed, int health, BufferedImage image) {
+    public NPC(int x, int y, int speed, int health, BufferedImage image) {
         setPositionX(x);
         setPositionY(y);
         setHealth(health);
@@ -56,16 +53,18 @@ public class Player implements Entity//, Drawable
 
     @Override
     public BufferedImage getImage() {
-        try {
-            //image = ImageIO.read(getClass().getResourceAsStream(""))
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+        return this.image;
     }
 
     @Override
     public void setImage(BufferedImage image) {
         this.image = image;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

@@ -15,6 +15,12 @@ public class Tile {
         buffy.getGraphics().drawImage(image, 0, 0, null);
         this.image = buffy;
     }
+    public void setCollision() {
+        this.collision = true;
+    }
+    public boolean getCollision(){
+        return this.collision;
+    }
 
     public BufferedImage getImage() {
         return this.image;

@@ -35,7 +35,7 @@ public class TileManager {
 
         tiles = new Tile[2];
         getTileImage();
-        this.mapTile = new int[maxScreenWidth][maxScreenHeight];
+        this.mapTile = new int[maxScreenWidth/48][maxScreenHeight/48];
         setMapName(mapName);
         loadMap();
 
@@ -54,23 +54,27 @@ public class TileManager {
     }
 
     public int getMapTile(int col, int row) {
-        return this.mapTile[col][row];
+        if (col < 0 || row < 0 || col >= mapTile.length || row >= mapTile[0].length) {
+            return 1; // Default to wall for out-of-bounds
+        }
+        return mapTile[col][row];
     }
 
     private void getTileImage() {
         try {
-            BufferedImage image = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("../sprites/map/land.png")));
+            BufferedImage image = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("2DAdventure/src/main/java/sprites/map/land.png")));
             tiles[0] = new Tile();
             tiles[0].setImage(image);
-            BufferedImage image1 = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("../sprites/map/flooring.png")));
+            BufferedImage image1 = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("2DAdventure/src/main/java/sprites/map/flooring.png")));
             tiles[1] = new Tile();
             tiles[1].setImage(image1);
+            tiles[1].setCollision();
             setStatus(true);
             //System.out.println("Image loaded\n.");
         } catch (IOException | IllegalArgumentException | NullPointerException e) {
             if (e.getClass() == IOException.class) {
+                System.out.println("Tiles could not be loaded.\n");
             }
-            System.out.println("Tiles could not be loaded.\n");
             if (e.getClass() == IllegalArgumentException.class)
                 System.out.println("Invalid path\n");
             if (e.getClass() == NullPointerException.class)
@@ -84,7 +88,7 @@ public class TileManager {
             int col;
             int row = 0;
             List<String> lines = new ArrayList<>();
-            File mapFile = new File("2DAdventure/src/sprites/map/" + getMapName() + ".txt");
+            File mapFile = new File("src/main/java/sprites/map/" + getMapName() + ".txt");
 
             Scanner scanner = new Scanner(mapFile);
             String line;

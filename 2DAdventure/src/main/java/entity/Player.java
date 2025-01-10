@@ -1,24 +1,40 @@
 package entity;
 
+import rendering.Drawable;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class NPC implements Entity {
+public class Player implements Entity//, Drawable
+{
 
     private int positionX;
     private int positionY;
-    private String message;
     private int speed;
     private int health;
     private BufferedImage image;
+    private String name;
 
-    public NPC(int x, int y, int speed, int health, BufferedImage image) {
+    private Rectangle collisionBox;
+    private boolean collisionOn = true;
+
+    public Player(int x, int y, int speed, int health, BufferedImage image, String name) {
         setPositionX(x);
         setPositionY(y);
         setHealth(health);
         setSpeed(speed);
         setImage(image);
-    }
+        setName(name);
+        this.collisionBox = new Rectangle(8, 16, 32, 32);
 
+    }
+public void setName(String name) {
+        this.name = name;
+}
+public String getName() {
+        return name;
+}
     public int getPositionX() {
         return positionX;
     }
@@ -53,18 +69,11 @@ public class NPC implements Entity {
 
     @Override
     public BufferedImage getImage() {
-        return null;
+        return this.image;
     }
 
     @Override
     public void setImage(BufferedImage image) {
         this.image = image;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-    public void setMessage(String message) {
-        this.message = message;
     }
 }
