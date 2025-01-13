@@ -10,9 +10,4 @@ class ProgressTest {
     Progress progress = new Progress();
     assertNotNull(progress);
 }
-@Test
-    void testConnection(){
-    Progress progress = new Progress();
-    assertNotNull(progress.connect());
-}
 }

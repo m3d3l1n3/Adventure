@@ -26,6 +26,7 @@ public class KeyHandler implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
+        System.out.println("In key handler:" + e.getKeyCode());
         switch (code) {
             case KeyEvent.VK_W:
                 keyState[0] = 1;

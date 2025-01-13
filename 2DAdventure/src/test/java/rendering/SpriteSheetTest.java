@@ -20,14 +20,14 @@ class SpriteSheetTest {
     } catch (IOException e) {
         throw new RuntimeException(e);
     }
-//    SpriteSheet sheetDown =new SpriteSheetBuilder().
-//            withSheet(sheet).
-//            withColumns(4).
-//            withRows(4).
-//            withSpriteCount(16).
-//            build(0, 0);
+    SpriteSheet sheetDown =new SpriteSheetBuilder().
+            withSheet(sheet).
+            withColumns(4).
+            withRows(4).
+            withSpriteCount(16).
+            build(0, 0);
 
-//    assertNotNull(spriteSheet);
+    assertNotNull(sheetDown);
 
 }
 }

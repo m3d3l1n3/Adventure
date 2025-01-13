@@ -13,13 +13,14 @@ import java.sql.*;
 import java.util.Random;
 import java.util.Scanner;
 
+import dboperations.DatabaseOperations;
 import rendering.SpriteEngine;
 import rendering.SpriteSheet;
 import rendering.SpriteSheetBuilder;
 import saving.Progress;
 
 public class Main {
-
+    public static DatabaseOperations dbOps = new DatabaseOperations();
     public static void main(String[] args) {
 
         MainMenu(args);
@@ -82,32 +83,13 @@ public class Main {
                 if (enteredName.equals("admin")) {
                     openAdminKeyFrame();
                 } else {
-                    checkTheDatabase(enteredName);
+                    dbOps.checkTheDatabase(enteredName);
                 }
             }
         };
         submitButton.addActionListener(submitButtonListener);
     }
-    private static boolean checkTheDatabase(String playerName) {
-        Progress progress = new Progress();
-        String sql = "select * from players where name=?";
-        try{
-        Connection conn = progress.connect();
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, playerName);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                System.out.println("Exists player: " + playerName);
-                return true;
-            } else {
-                progress.saveProgressToDatabase(playerName,1,0,0);
-                return true;
-            }
-        } catch (SQLException e) {
-            System.out.println("Error loading last known position: " + e.getMessage());
-            return false;
-        }
-    }
+
     private static void validateTerminalArgs(String[] args,String playerName) {
         try {
             if (args.length == 0) {
@@ -159,7 +141,7 @@ public class Main {
 
         GameThread gameThread = new GameThread();
         Controller controller = new Controller(panel);
-        frame.addKeyListener(panel.keyHandler);
+       // frame.addKeyListener(panel.keyHandler);
         frame.add(panel);
         frame.pack(); // sets the size properly
 
@@ -193,10 +175,10 @@ public class Main {
         adminFrame.add(keyLabel);
         adminFrame.add(keyField);
         adminFrame.add(submitKeyButton);
-
         submitKeyButton.addActionListener(e -> {
             String enteredKey = new String(keyField.getPassword());
-            if (validateAdminKey(enteredKey)) {
+           //if (dbOps.validateAdminKey(enteredKey)) {
+            if(dbOps.validateAdminKey(enteredKey)){
                 adminFrame.dispose();
                 openAdminPanel();
             } else {
@@ -208,33 +190,10 @@ public class Main {
         adminFrame.setVisible(true);
     }
 
-    private static boolean validateAdminKey(String key) {
-        String sql = "SELECT * FROM Admin WHERE key = ?";
-        try (Connection conn = new Progress().connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, Integer.parseInt(key)); // Convert string key to integer
-            ResultSet rs = pstmt.executeQuery();
-
-            return rs.next(); // If there’s a result, the key is valid
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid key format: " + e.getMessage());
-            return false; // Key wasn't a valid number
-        } catch (SQLException e) {
-            System.out.println("Error validating admin key: " + e.getMessage());
-            return false;
-        }
-    }
-
-
-    private static void openAdminPanel() {
-
+    public static void openAdminPanel() {
         JFrame adminPanel = new JFrame("Admin Panel");
         adminPanel.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         adminPanel.setSize(600, 400);
-
-
-
 
         JTable table = new JTable();
         DefaultTableModel model = new DefaultTableModel();
@@ -252,9 +211,7 @@ public class Main {
         bottomPanel.add(deleteButton);
         adminPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        loadPlayerData(model);
-
-
+        dbOps.loadPlayerData(model);
 
         updateButton.addActionListener(e -> {
             int selectedRow = table.getSelectedRow();
@@ -262,8 +219,8 @@ public class Main {
                 int id = (int) model.getValueAt(selectedRow, 0);
                 String name = (String) model.getValueAt(selectedRow, 1);
                 int timesPlayed = (int) model.getValueAt(selectedRow, 2);
-                updatePlayer(id, name, timesPlayed);
-                loadPlayerData(model);
+                dbOps.updatePlayerTable(name, id, timesPlayed);
+                dbOps.loadPlayerData(model);
             }
         });
 
@@ -271,59 +228,12 @@ public class Main {
             int selectedRow = table.getSelectedRow();
             if (selectedRow != -1) {
                 int id = (int) model.getValueAt(selectedRow, 0);
-                deletePlayer(id);
-                loadPlayerData(model);
+                dbOps.deletePlayer(id);
+                dbOps.loadPlayerData(model);
             }
         });
 
         adminPanel.setLocationRelativeTo(null);
         adminPanel.setVisible(true);
-    }
-
-    private static void loadPlayerData(DefaultTableModel model) {
-        String sql = "SELECT * FROM players";
-        model.setRowCount(0);
-        try (Connection conn = new Progress().connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-
-            while (rs.next()) {
-                model.addRow(new Object[]{rs.getInt("id"), rs.getString("name"), rs.getInt("timesplayed")});
-            }
-        } catch (SQLException e) {
-            System.out.println("Error loading player data: " + e.getMessage());
-        }
-    }
-
-    private static void updatePlayer(int id, String name, int timesPlayed) {
-        String sql = "UPDATE players SET name = ?, timesplayed = ? WHERE id = ?";
-        try (Connection conn = new Progress().connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, name);
-            pstmt.setInt(2, timesPlayed);
-            pstmt.setInt(3, id);
-            pstmt.executeUpdate();
-
-            System.out.println("Player updated successfully.");
-        } catch (SQLException e) {
-            System.out.println("Error updating player: " + e.getMessage());
-
-        }
-
-    }
-
-    private static void deletePlayer(int id) {
-        String sql = "DELETE FROM players WHERE id = ?";
-        try (Connection conn = new Progress().connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-
-            System.out.println("Player deleted successfully.");
-        } catch (SQLException e) {
-            System.out.println("Error deleting player: " + e.getMessage());
-        }
     }
 }

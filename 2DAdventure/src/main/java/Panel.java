@@ -56,7 +56,10 @@ public class Panel extends JPanel implements Drawable {
     public String getMapName() {
         return mapName;
     }
-
+    @Override
+    public void setFocusable(boolean b) {
+        super.setFocusable(b);
+    }
     public Panel(String mapName, int positionX, int positionY, String playerName) {
         this.setPreferredSize(new Dimension(maxScreenWidth, maxScreenHeight));
         this.setBackground(Color.BLACK);
@@ -67,6 +70,8 @@ public class Panel extends JPanel implements Drawable {
         this.tileManager = new TileManager(maxScreenWidth, maxScreenHeight, getMapName());
         this.player = new Player(positionX, positionY, 4, 100, null,playerName);
         progress.saveProgressToDatabase(player.getName(),1,player.getPositionX(),player.getPositionY());
+        setFocusable(true);
+        this.addKeyListener(keyHandler);
 
     }
 
@@ -76,6 +81,7 @@ public class Panel extends JPanel implements Drawable {
     // not allowed (text will be printed in the terminal for that)
     // How do I make sure that the step is not allowed, without stopping the gameloop?
     public void update() {
+        System.out.println("Panel - Game running.");
         int tileX = player.getPositionX();
         int tileY = player.getPositionY();
         boolean moved = false;
@@ -126,18 +132,21 @@ public class Panel extends JPanel implements Drawable {
 //        }
         //if(!moved){
         //    System.out.println("Player didnt move");
-        //}
-
+        //
         if (keyHandler.keyState[0] == 1){
+            System.out.println("Prseesed 0");
             directionX = 0;
             directionY = -1;
     } else if (keyHandler.keyState[1] == 1) {
+            System.out.println("Pressed 1");
         directionX = 0;
         directionY = 1;
     } else if (keyHandler.keyState[2] == 1) {
+            System.out.println("Pressed 2");
         directionX = -1;
         directionY = 0;
     } else if (keyHandler.keyState[3] == 1) {
+            System.out.println("Pressed 3");
         directionX = 1;
         directionY = 0;
     } else {
@@ -146,6 +155,8 @@ public class Panel extends JPanel implements Drawable {
     }
          futureTileX = (player.getPositionX() + player.getSpeed() * directionX) / finalTileSize;
          futureTileY = (player.getPositionY() + player.getSpeed() * directionY) / finalTileSize;
+         //player.setPositionY(player.getPositionY() + player.getSpeed() * directionY);
+         //player.setPositionX(player.getPositionX() + player.getSpeed() * directionX);
 
         if (isTileWalkable(futureTileX, futureTileY)) {
             player.setPositionX(player.getPositionX() + player.getSpeed() * directionX);

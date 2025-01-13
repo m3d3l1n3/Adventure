@@ -62,10 +62,10 @@ public class TileManager {
 
     private void getTileImage() {
         try {
-            BufferedImage image = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("2DAdventure/src/main/java/sprites/map/land.png")));
+            BufferedImage image = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("src/main/java/sprites/map/land.png")));
             tiles[0] = new Tile();
             tiles[0].setImage(image);
-            BufferedImage image1 = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("2DAdventure/src/main/java/sprites/map/flooring.png")));
+            BufferedImage image1 = ImageIO.read(Objects.requireNonNull(TileManager.class.getResource("src/main/java/sprites/map/flooring.png")));
             tiles[1] = new Tile();
             tiles[1].setImage(image1);
             tiles[1].setCollision();

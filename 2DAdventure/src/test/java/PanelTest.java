@@ -13,6 +13,6 @@ class PanelTest {
 @Test
     void testFunctionalityPanel() {
     Panel  panel = new Panel("map1",0,0,"Player1");
-    assertEquals(true,panel.isTileWalkable(0,0));
+    assertTrue(panel.isTileWalkable(0, 0));
 }
 }
